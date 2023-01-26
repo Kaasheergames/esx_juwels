@@ -13,21 +13,30 @@ Citizen.CreateThread(function()
 	PlayerData = ESX.GetPlayerData()
 end)
 
-local v2 = vector3(-1374.121, -318.4429, 38.50731)
-local ped = PlayerPedId()
-local v3 = vector3(1084.851, -2002.407, 31.40142)
+local v2 =  Config.NPCLocation
+local v3 =  Config.SmeltLocation
+
+
 Citizen.CreateThread(function()
+    local ped = PlayerPedId()
     while true do
         Wait(0)
         local coords = GetEntityCoords(ped)
         local dist = GetDistanceBetweenCoords(coords, v2.x, v2.y, v2.z, true)
         debounce = true
+        local localmessage = Config.InkoopTekst
+        local distancemessage = Config.InkoopAfstandTekst
         if dist < 3 then
             debounce = false
-            DrawScriptText(vector3(v2.x, v2.y, v2.z + 1), '~b~E~w~ - Koop juwelen ~b~(€50,000)')
-            if IsControlJustReleased(0, 38) then
-                TriggerServerEvent("esx_juwels:koopjuwelen", ped)
-                debounce = true
+            if dist <1.5 then
+                DrawScriptText(vector3(v2.x, v2.y, v2.z + 1), localmessage)
+                if IsControlJustReleased(0, Config.Interactie) then
+                   TriggerServerEvent("esx_juwels:koopjuwelen", ped)
+                   print("Event getriggerd")
+                   debounce = true
+                end
+            else
+               DrawScriptText(vector3(v2.x, v2.y, v2.z + 1), distancemessage)
             end
         end
         if debounce then
@@ -37,17 +46,27 @@ Citizen.CreateThread(function()
 end)
 
 Citizen.CreateThread(function()
+    local ped = PlayerPedId()
     while true do
         Wait(0)
         local coords = GetEntityCoords(ped)
         local dist = GetDistanceBetweenCoords(coords, v3.x, v3.y, v3.z, true)
+        local distancemessage = Config.SmeltTekstAfstand
+        local localmessage = Config.SmeltTekst
         debounce = true
         if dist < 3 then
             debounce = false
-            DrawScriptText(vector3(v3.x, v3.y, v3.z), '~b~E~w~ - Smelt juwelen')
-            if IsControlJustReleased(0, 38) then
-                TriggerServerEvent("esx_juwels:smeltjuwelen", ped)
-                debounce = true
+            if dist < 1.5 then
+                DrawScriptText(vector3(v3.x, v3.y, v3.z), localmessage)
+                if IsControlJustReleased(0, Config.Interactie) then 
+                    TriggerServerEvent("esx_juwels:smeltjuwelen", ped)
+                    if Config.Developer then
+                        print("Event getriggerd")
+                    end
+                    debounce = true
+                end
+            else
+                DrawScriptText(vector3(v3.x, v3.y, v3.z), distancemessage)
             end
         end
         if debounce then
@@ -79,15 +98,21 @@ end
 
 
 CreateThread(function(NPCped)
-    local NPCped = "a_m_o_soucent_03"
+    local NPCped = Config.NPC
 
     RequestModel(NPCped)
     while not HasModelLoaded(NPCped) do
         Wait(0)
     end
 
-    local NPC = CreatePed(4, NPCped, v2, 167.558, false, true)
+    local NPC = CreatePed(4, NPCped, v2, Config.NPCHeading, false, true)
     FreezeEntityPosition(NPC, true)
     SetBlockingOfNonTemporaryEvents(NPC, true)
     SetEntityInvincible(NPC, true)
+    if Config.ToggleAnimation then
+        TaskStartScenarioInPlace(NPC, 'WORLD_HUMAN_SMOKING', 0, true)
+    end
+    if Config.Developer then
+        print("NPC gemaakt")
+    end
 end)
